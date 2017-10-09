@@ -59,24 +59,24 @@
                 {
                     timer.Stop();
                     tail = 5;
-                    Console.BackgroundColor = ConsoleColor.Red;
-                    Console.Clear();
-                    System.Threading.Thread.Sleep(250);
-                    Console.BackgroundColor = ConsoleColor.Black;
-                    Console.Clear();
+                    for (var x = 0; x < trail.Count; x++)
+                    {
+                        write(ConsoleColor.Red, "X", trail[x].x, trail[x].y);
+                    }
+                    System.Threading.Thread.Sleep(1000);
                     timer.Start();
                 }
             }
             trail.Add(new XY { x = px, y = py });
             while (trail.Count > tail)
             {
-                write(ConsoleColor.Black, square, trail[0].x, trail[0].y);
+                write(ConsoleColor.Black, " ", trail[0].x, trail[0].y);
                 trail.RemoveAt(0);
             }
 
             if (ax == px && ay == py)
             {
-                write(ConsoleColor.Black, square, ax, ay);
+                write(ConsoleColor.Black, " ", ax, ay);
                 tail++;
                 ax = rnd.Next(1, tcx);
                 ay = rnd.Next(1, tcy);
