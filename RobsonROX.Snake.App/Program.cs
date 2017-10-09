@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RobsonROX.Snake.App
+﻿namespace RobsonROX.Snake.App
 {
     class Program
     {

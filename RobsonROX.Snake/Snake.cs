@@ -96,7 +96,7 @@
                 switch (Console.ReadKey().Key)
                 {
                     case ConsoleKey.UpArrow:
-                        if(yv != 1)
+                        if (yv != 1)
                         {
                             xv = 0;
                             yv = -1;
