@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RobsonROX.Snake.App", "Robs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobsonROX.Snake", "RobsonROX.Snake\RobsonROX.Snake.csproj", "{E94EC06F-7D0E-46FA-A8D1-7F72DD4AA8B5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobsonROX.Snake.Web", "RobsonROX.Snake.Web\RobsonROX.Snake.Web.csproj", "{E201169D-A6F7-4DE0-BE49-7FFA4DE8DD75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{E94EC06F-7D0E-46FA-A8D1-7F72DD4AA8B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E94EC06F-7D0E-46FA-A8D1-7F72DD4AA8B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E94EC06F-7D0E-46FA-A8D1-7F72DD4AA8B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E201169D-A6F7-4DE0-BE49-7FFA4DE8DD75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E201169D-A6F7-4DE0-BE49-7FFA4DE8DD75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E201169D-A6F7-4DE0-BE49-7FFA4DE8DD75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E201169D-A6F7-4DE0-BE49-7FFA4DE8DD75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

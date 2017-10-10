@@ -1,0 +1,27 @@
+﻿@model IEnumerable<Leaderboard>
+@{ 
+    int position = 1;
+}
+<h1>Snake Leaderboards</h1>
+<table class="col-lg-12">
+    <thead>
+        <tr>
+            <th class="col-lg-1">#</th>
+            <th class="col-lg-8">Player</th>
+            <th class="col-lg-1">Score</th>
+            <th class="col-lg-2">Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entry in Model)
+        {
+            <tr>
+                <td class="col-lg-1">@position</td>
+                <td class="col-lg-8">@entry.Player</td>
+                <td class="col-lg-1">@entry.Score</td>
+                <td class="col-lg-1">@entry.Date</td>
+            </tr>
+            position++;
+        }
+    </tbody>
+</table>

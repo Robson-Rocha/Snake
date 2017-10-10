@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Threading.Tasks;
     using System.Timers;
 
     public class Snake
@@ -12,19 +14,52 @@
             public int y { get; set; }
         }
 
-        private const string square = "\u2588";
-        private int px = 10;
-        private int py = 10;
-        private int tcy = 25;
-        private int tcx = 80;
-        private int ax = 15, ay = 15;
-        private int xv = 1, yv = 0;
-        private List<XY> trail = new List<XY>();
-        private int tail = 5;
+        private const string squareChar = "\u2588";
+        private const string spaceChar = " ";
+        private const string deadChar = "X";
         private Random rnd = new Random(DateTime.Now.Millisecond);
-        private Timer timer;
+        private HttpClient httpClient = new HttpClient();
+        private Timer timer = new Timer(1000 / 15);
+        private List<XY> trail = new List<XY>();
 
-        private void write(ConsoleColor color, string text, int x, int y)
+        private XY arena;
+        private XY apple;
+        private XY head;
+        private XY direction;
+        private int tail;
+        private int score;
+
+        /// <summary>
+        /// Gets or sets the Player Name. Used to write the score at the leaderboards.
+        /// </summary>
+        public string PlayerName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Leaderboards Service Uri. Override to set an alternative or local service.
+        /// </summary>
+        public string LeaderboardsServiceUri { get; set; }
+
+        public Snake()
+        {
+            LeaderboardsServiceUri = "http://snakeleaderboards.azurewebsites.net/api/";
+        }
+
+        private void Reset()
+        {
+            head.x = 10;
+            head.y = 10;
+            arena.y = Console.WindowHeight;
+            arena.x = Console.WindowWidth;
+            apple.x = rnd.Next(1, arena.x);
+            apple.y = rnd.Next(1, arena.y);
+            direction.x = 1;
+            direction.y = 0;
+            trail.Clear();
+            tail = 5;
+            score = 0;
+        }
+
+        private void Write(ConsoleColor color, string text, int x, int y)
         {
             Console.ForegroundColor = color;
             Console.SetCursorPosition(x, y);
@@ -33,102 +68,124 @@
 
         private void GameTimer(object sender, ElapsedEventArgs e)
         {
-            px += xv;
-            py += yv;
-            if (px < 0)
+            timer.Enabled = false;
+            head.x += direction.x;
+            head.y += direction.y;
+            if (head.x < 0)
             {
-                px = tcx - 1;
+                head.x = arena.x - 1;
             }
-            if (px > tcx - 1)
+            else if (head.x > arena.x - 1)
             {
-                px = 0;
+                head.x = 0;
             }
-            if (py < 0)
+            else if (head.y < 0)
             {
-                py = tcy - 1;
+                head.y = arena.y - 1;
             }
-            if (py > tcy - 1)
+            else if (head.y > arena.y - 1)
             {
-                py = 0;
+                head.y = 0;
             }
 
             for (var i = 0; i < trail.Count; i++)
             {
-                write(ConsoleColor.Green, square, trail[i].x, trail[i].y);
-                if (trail[i].x == px && trail[i].y == py)
+                Write(ConsoleColor.Green, squareChar, trail[i].x, trail[i].y);
+                if (trail[i].x == head.x && trail[i].y == head.y)
                 {
-                    timer.Stop();
-                    tail = 5;
-                    for (var x = 0; x < trail.Count; x++)
-                    {
-                        write(ConsoleColor.Red, "X", trail[x].x, trail[x].y);
-                    }
-                    System.Threading.Thread.Sleep(1000);
-                    timer.Start();
+                    GameOver();
+                    return;
                 }
             }
-            trail.Add(new XY { x = px, y = py });
+            trail.Add(new XY { x = head.x, y = head.y });
             while (trail.Count > tail)
             {
-                write(ConsoleColor.Black, " ", trail[0].x, trail[0].y);
+                Write(ConsoleColor.Black, spaceChar, trail[0].x, trail[0].y);
                 trail.RemoveAt(0);
             }
 
-            if (ax == px && ay == py)
+            if (apple.x == head.x && apple.y == head.y)
             {
-                write(ConsoleColor.Black, " ", ax, ay);
+                Write(ConsoleColor.Black, spaceChar, apple.x, apple.y);
                 tail++;
-                ax = rnd.Next(1, tcx);
-                ay = rnd.Next(1, tcy);
+                score++;
+                apple.x = rnd.Next(1, arena.x);
+                apple.y = rnd.Next(1, arena.y);
             }
-            write(ConsoleColor.Red, square, ax, ay);
+            Write(ConsoleColor.Red, squareChar, apple.x, apple.y);
+            timer.Enabled = true;
         }
 
+        private void GameOver()
+        {
+            timer.Stop();
+            if(!string.IsNullOrWhiteSpace(PlayerName) && !string.IsNullOrWhiteSpace(LeaderboardsServiceUri))
+                Task.Run(() => httpClient.PostAsync($"{LeaderboardsServiceUri}Leaderboards/{PlayerName}", new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("score", score.ToString()) })));
+
+            for (var x = 0; x < trail.Count; x++)
+            {
+                Write(ConsoleColor.Red, deadChar, trail[x].x, trail[x].y);
+            }
+            Write(ConsoleColor.Cyan, $"Game over! Your score is {score}!", 1, 1);
+            Write(ConsoleColor.DarkCyan, $"Press any key to restart, or <ESC> to exit", 1, 2);
+
+            Reset();
+        }
+
+        /// <summary>
+        /// Start a new game
+        /// </summary>
         public void Start()
         {
+            Reset();
             Console.CursorVisible = false;
             Console.Clear();
-            timer = new Timer(1000 / 15);
             timer.Elapsed += GameTimer;
             timer.Start();
+
             while (true)
             {
                 switch (Console.ReadKey().Key)
                 {
                     case ConsoleKey.UpArrow:
-                        if (yv != 1)
+                        if (direction.y != 1)
                         {
-                            xv = 0;
-                            yv = -1;
+                            direction.x = 0;
+                            direction.y = -1;
                         }
                         break;
                     case ConsoleKey.DownArrow:
-                        if (yv != -1)
+                        if (direction.y != -1)
                         {
-                            xv = 0;
-                            yv = 1;
+                            direction.x = 0;
+                            direction.y = 1;
                         }
                         break;
                     case ConsoleKey.LeftArrow:
-                        if (xv != 1)
+                        if (direction.x != 1)
                         {
-                            xv = -1;
-                            yv = 0;
+                            direction.x = -1;
+                            direction.y = 0;
                         }
                         break;
                     case ConsoleKey.RightArrow:
-                        if (xv != -1)
+                        if (direction.x != -1)
                         {
-                            xv = 1;
-                            yv = 0;
+                            direction.x = 1;
+                            direction.y = 0;
                         }
                         break;
                     case ConsoleKey.Escape:
                         goto End;
                 }
+                if(!timer.Enabled)
+                {
+                    Console.Clear();
+                    timer.Start();
+                }
             }
 
-        End:
+            End:
             timer.Stop();
             timer.Elapsed -= GameTimer;
             Console.Clear();
